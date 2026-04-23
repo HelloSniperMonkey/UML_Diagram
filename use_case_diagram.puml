@@ -1,0 +1,73 @@
+@startuml
+left to right direction
+skinparam linetype ortho
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+actor Student
+actor "UG Student" as UG
+actor "PG Student" as PG
+actor "PhD Student" as PHD
+actor Registrar
+actor "Exam Cell" as ExamCell
+
+UG -right-|> Student
+PG -right-|> Student
+PHD -right-|> Student
+
+UG -[hidden]down-> PG
+PG -[hidden]down-> PHD
+Student -[hidden]down-> Registrar
+Registrar -[hidden]down-> ExamCell
+
+rectangle "HEI Registration and Result System" {
+  usecase "Login" as UC1
+  usecase "View Course Catalog" as UC2
+  usecase "Add Course" as UC3
+  usecase "Drop Course" as UC4
+  usecase "Submit Registration" as UC5
+  usecase "Validate Registration Rules" as UC6
+  usecase "Check Seat Availability" as UC7
+  usecase "Approve Special Request" as UC8
+  usecase "Publish Grades" as UC9
+  usecase "Calculate CGPA" as UC10
+  usecase "View Result / Transcript" as UC11
+  usecase "Convert Letter Grade to Grade Point" as UC12
+
+  UC1 -[hidden]down-> UC2
+  UC2 -[hidden]down-> UC3
+  UC3 -[hidden]down-> UC4
+  UC4 -[hidden]down-> UC5
+  UC5 -[hidden]down-> UC11
+
+  UC6 -[hidden]down-> UC7
+  UC7 -[hidden]down-> UC8
+  UC8 -[hidden]down-> UC9
+  UC9 -[hidden]down-> UC12
+  UC12 -[hidden]down-> UC10
+
+  UC1 -[hidden]right-> UC6
+  UC2 -[hidden]right-> UC7
+  UC3 -[hidden]right-> UC8
+  UC5 -[hidden]right-> UC9
+  UC11 -[hidden]right-> UC10
+}
+
+Student --> UC1
+Student --> UC2
+Student --> UC3
+Student --> UC4
+Student --> UC5
+Student --> UC11
+Registrar --> UC8
+ExamCell --> UC9
+ExamCell --> UC10
+
+UC3 .right.> UC6 : <<include>>
+UC3 .right.> UC7 : <<include>>
+UC4 .right.> UC6 : <<include>>
+UC5 .right.> UC6 : <<include>>
+UC10 .up.> UC12 : <<include>>
+UC11 .right.> UC10 : <<include>>
+UC8 .up.> UC6 : <<extend>>
+@enduml

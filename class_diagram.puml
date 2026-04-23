@@ -1,0 +1,114 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class Organization {
+  -name: String
+  -code: String
+  +addStudent(s: Student): void
+  +offerCourse(c: Course): void
+}
+
+abstract class Student {
+  -studentId: String
+  -name: String
+  -email: String
+  -cgpa: double
+  +registerSemester(term: String): Registration
+  +viewTranscript(): Transcript
+  +getCGPA(): double
+}
+
+class UGStudent {
+  -program: String
+  -year: int
+}
+
+class PGStudent {
+  -specialization: String
+  -assistantship: boolean
+}
+
+class PhDStudent {
+  -researchArea: String
+  -supervisorName: String
+}
+
+interface CGPACalculable {
+  +calculateCGPA(): double
+}
+
+class Registration {
+  -registrationId: String
+  -term: String
+  -status: String
+  +addCourse(offering: CourseOffering): boolean
+  +dropCourse(offering: CourseOffering): boolean
+  +submit(): void
+}
+
+class Course {
+  -courseCode: String
+  -title: String
+  -credits: int
+}
+
+class CourseOffering {
+  -sectionId: String
+  -semester: String
+  -capacity: int
+  -enrolledCount: int
+  +hasSeat(): boolean
+}
+
+class Enrollment {
+  -status: String
+  -letterGrade: String
+  +assignGrade(g: String): void
+}
+
+class Transcript {
+  -currentCGPA: double
+  +calculateCGPA(): double
+  +generateSummary(): String
+}
+
+class SemesterRecord {
+  -term: String
+  -sgpa: double
+  +calculateSGPA(): double
+}
+
+class RegistrationPolicy {
+  -maxCreditsUG: int
+  -maxCreditsPG: int
+  -maxCreditsPhD: int
+  +validateAddDrop(s: Student, r: Registration, o: CourseOffering): boolean
+  +validateCreditLoad(s: Student, r: Registration): boolean
+}
+
+class GradePointPolicy {
+  +toPoint(letterGrade: String): double
+}
+
+UGStudent --|> Student
+PGStudent --|> Student
+PhDStudent --|> Student
+Transcript ..|> CGPACalculable
+
+Organization o-- "1" RegistrationPolicy
+Organization o-- "1" GradePointPolicy
+Organization o-- "*" Student
+Organization o-- "*" Course
+Course "1" o-- "*" CourseOffering
+
+Student "1" --> "0..*" Registration : creates
+Student "1" --> "1" Transcript : owns
+Registration "1" *-- "0..*" Enrollment
+Enrollment "*" --> "1" CourseOffering
+Transcript "1" *-- "1..*" SemesterRecord
+SemesterRecord "1" *-- "1..*" Enrollment
+
+Registration ..> RegistrationPolicy : uses
+Transcript ..> GradePointPolicy : uses
+CourseOffering --> Course : of
+@enduml

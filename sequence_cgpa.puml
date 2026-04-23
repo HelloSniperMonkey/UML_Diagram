@@ -1,0 +1,26 @@
+@startuml
+actor "Exam Cell" as ExamCell
+participant "Result Service" as RS
+participant "Transcript" as TR
+participant "Semester Record" as SR
+participant "Enrollment" as EN
+participant "Grade Point Policy" as GP
+participant "Student" as ST
+
+ExamCell -> RS : publishFinalGrades(studentId, term)
+RS -> TR : calculateCGPA()
+loop for each semester
+  TR -> SR : calculateSGPA()
+  loop for each enrollment
+    SR -> EN : getLetterGrade()
+    EN --> SR : letterGrade
+    SR -> GP : toPoint(letterGrade)
+    GP --> SR : gradePoint
+  end
+  SR --> TR : sgpa and earnedCredits
+end
+TR -> ST : update cgpa
+ST --> TR : acknowledged
+TR --> RS : final CGPA
+RS --> ExamCell : transcript ready
+@enduml

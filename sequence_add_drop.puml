@@ -1,0 +1,34 @@
+@startuml
+actor Student
+participant "Registration UI" as UI
+participant "Registration Controller" as RC
+participant "Registration" as REG
+participant "Course Offering" as OFF
+participant "Registration Policy" as POL
+
+Student -> UI : selectAddOrDrop(courseCode, action)
+UI -> RC : processRequest(studentId, courseCode, action)
+RC -> REG : getActiveRegistration(studentId)
+REG --> RC : registration
+RC -> OFF : findOffering(courseCode)
+OFF --> RC : offering
+RC -> POL : validateAddDrop(student, registration, offering)
+POL --> RC : valid / invalid
+
+alt valid request and seat available
+  RC -> OFF : hasSeat()
+  OFF --> RC : true
+  alt action = add
+    RC -> REG : addCourse(offering)
+    REG --> RC : success
+  else action = drop
+    RC -> REG : dropCourse(offering)
+    REG --> RC : success
+  end
+  RC --> UI : showUpdatedRegistration()
+  UI --> Student : registration updated
+else invalid request or no seat
+  RC --> UI : showError(reason)
+  UI --> Student : request rejected
+end
+@enduml
