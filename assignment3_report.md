@@ -17,57 +17,51 @@ The system models a Higher Education Institute such as an IIT, NIT, or Central U
 
 The design follows the class notes: actors are placed outside the system boundary, use cases are placed inside the boundary, class diagrams show attributes, operations, multiplicity, and relationships, and sequence diagrams show object interaction over time.
 
+> Note: the diagrams below use Mermaid for Markdown preview rendering. The editable UML source remains in the standalone `.puml` files.
+
 ## 2. Use Case Diagram
 
-```plantuml
-@startuml
-left to right direction
-skinparam packageStyle rectangle
+```mermaid
+flowchart LR
+    UG[UG Student] --> Student[Student]
+    PG[PG Student] --> Student
+    PHD[PhD Student] --> Student
+    Registrar[Registrar]
+    ExamCell[Exam Cell]
 
-actor Student
-actor "UG Student" as UG
-actor "PG Student" as PG
-actor "PhD Student" as PHD
-actor Registrar
-actor "Exam Cell" as ExamCell
+    subgraph HEI[HEI Registration and Result System]
+        direction TB
+        UC1([Login])
+        UC2([View Course Catalog])
+        UC3([Add Course])
+        UC4([Drop Course])
+        UC5([Submit Registration])
+        UC6([Validate Registration Rules])
+        UC7([Check Seat Availability])
+        UC8([Approve Special Request])
+        UC9([Publish Grades])
+        UC10([Calculate CGPA])
+        UC11([View Result / Transcript])
+        UC12([Convert Letter Grade to Grade Point])
+    end
 
-UG --|> Student
-PG --|> Student
-PHD --|> Student
+    Student --- UC1
+    Student --- UC2
+    Student --- UC3
+    Student --- UC4
+    Student --- UC5
+    Student --- UC11
+    Registrar --- UC8
+    ExamCell --- UC9
+    ExamCell --- UC10
 
-rectangle "HEI Registration and Result System" {
-  usecase "Login" as UC1
-  usecase "View Course Catalog" as UC2
-  usecase "Add Course" as UC3
-  usecase "Drop Course" as UC4
-  usecase "Submit Registration" as UC5
-  usecase "Validate Registration Rules" as UC6
-  usecase "Check Seat Availability" as UC7
-  usecase "Approve Special Request" as UC8
-  usecase "Publish Grades" as UC9
-  usecase "Calculate CGPA" as UC10
-  usecase "View Result / Transcript" as UC11
-  usecase "Convert Letter Grade to Grade Point" as UC12
-}
-
-Student -- UC1
-Student -- UC2
-Student -- UC3
-Student -- UC4
-Student -- UC5
-Student -- UC11
-Registrar -- UC8
-ExamCell -- UC9
-ExamCell -- UC10
-
-UC3 .> UC6 : <<include>>
-UC3 .> UC7 : <<include>>
-UC4 .> UC6 : <<include>>
-UC5 .> UC6 : <<include>>
-UC10 .> UC12 : <<include>>
-UC11 .> UC10 : <<include>>
-UC8 .> UC6 : <<extend>>
-@enduml
+    UC3 -.->|<<include>>| UC6
+    UC3 -.->|<<include>>| UC7
+    UC4 -.->|<<include>>| UC6
+    UC5 -.->|<<include>>| UC6
+    UC10 -.->|<<include>>| UC12
+    UC11 -.->|<<include>>| UC10
+    UC8 -.->|<<extend>>| UC6
 ```
 
 ### Use case notes
@@ -79,121 +73,120 @@ UC8 .> UC6 : <<extend>>
 
 ## 3. Class Diagram
 
-```plantuml
-@startuml
-skinparam classAttributeIconSize 0
+```mermaid
+classDiagram
+    class Organization {
+        +name: String
+        +code: String
+        +addStudent(s: Student)
+        +offerCourse(c: Course)
+    }
 
-class Organization {
-  -name: String
-  -code: String
-  +addStudent(s: Student): void
-  +offerCourse(c: Course): void
-}
+    class Student {
+        <<abstract>>
+        +studentId: String
+        +name: String
+        +email: String
+        +cgpa: double
+        +registerSemester(term: String)
+        +viewTranscript()
+        +getCGPA()
+    }
 
-abstract class Student {
-  -studentId: String
-  -name: String
-  -email: String
-  -cgpa: double
-  +registerSemester(term: String): Registration
-  +viewTranscript(): Transcript
-  +getCGPA(): double
-}
+    class UGStudent {
+        +program: String
+        +year: int
+    }
 
-class UGStudent {
-  -program: String
-  -year: int
-}
+    class PGStudent {
+        +specialization: String
+        +assistantship: boolean
+    }
 
-class PGStudent {
-  -specialization: String
-  -assistantship: boolean
-}
+    class PhDStudent {
+        +researchArea: String
+        +supervisorName: String
+    }
 
-class PhDStudent {
-  -researchArea: String
-  -supervisorName: String
-}
+    class CGPACalculable {
+        <<interface>>
+        +calculateCGPA()
+    }
 
-interface CGPACalculable {
-  +calculateCGPA(): double
-}
+    class Registration {
+        +registrationId: String
+        +term: String
+        +status: String
+        +addCourse(offering: CourseOffering)
+        +dropCourse(offering: CourseOffering)
+        +submit()
+    }
 
-class Registration {
-  -registrationId: String
-  -term: String
-  -status: String
-  +addCourse(offering: CourseOffering): boolean
-  +dropCourse(offering: CourseOffering): boolean
-  +submit(): void
-}
+    class Course {
+        +courseCode: String
+        +title: String
+        +credits: int
+    }
 
-class Course {
-  -courseCode: String
-  -title: String
-  -credits: int
-}
+    class CourseOffering {
+        +sectionId: String
+        +semester: String
+        +capacity: int
+        +enrolledCount: int
+        +hasSeat()
+    }
 
-class CourseOffering {
-  -sectionId: String
-  -semester: String
-  -capacity: int
-  -enrolledCount: int
-  +hasSeat(): boolean
-}
+    class Enrollment {
+        +status: String
+        +letterGrade: String
+        +assignGrade(g: String)
+    }
 
-class Enrollment {
-  -status: String
-  -letterGrade: String
-  +assignGrade(g: String): void
-}
+    class Transcript {
+        +currentCGPA: double
+        +calculateCGPA()
+        +generateSummary()
+    }
 
-class Transcript {
-  -currentCGPA: double
-  +calculateCGPA(): double
-  +generateSummary(): String
-}
+    class SemesterRecord {
+        +term: String
+        +sgpa: double
+        +calculateSGPA()
+    }
 
-class SemesterRecord {
-  -term: String
-  -sgpa: double
-  +calculateSGPA(): double
-}
+    class RegistrationPolicy {
+        +maxCreditsUG: int
+        +maxCreditsPG: int
+        +maxCreditsPhD: int
+        +validateAddDrop(s: Student, r: Registration, o: CourseOffering)
+        +validateCreditLoad(s: Student, r: Registration)
+    }
 
-class RegistrationPolicy {
-  -maxCreditsUG: int
-  -maxCreditsPG: int
-  -maxCreditsPhD: int
-  +validateAddDrop(s: Student, r: Registration, o: CourseOffering): boolean
-  +validateCreditLoad(s: Student, r: Registration): boolean
-}
+    class GradePointPolicy {
+        +toPoint(letterGrade: String)
+    }
 
-class GradePointPolicy {
-  +toPoint(letterGrade: String): double
-}
+    Student <|-- UGStudent
+    Student <|-- PGStudent
+    Student <|-- PhDStudent
+    CGPACalculable <|.. Transcript
 
-UGStudent --|> Student
-PGStudent --|> Student
-PhDStudent --|> Student
-Transcript ..|> CGPACalculable
+    Organization "1" o-- "1" RegistrationPolicy : owns
+    Organization "1" o-- "1" GradePointPolicy : owns
+    Organization "1" o-- "*" Student : has
+    Organization "1" o-- "*" Course : offers
+    Course "1" o-- "*" CourseOffering : schedules
 
-Organization o-- "1" RegistrationPolicy
-Organization o-- "1" GradePointPolicy
-Organization o-- "*" Student
-Organization o-- "*" Course
-Course "1" o-- "*" CourseOffering
+    Student "1" --> "0..*" Registration : creates
+    Student "1" --> "1" Transcript : owns
+    Registration "1" *-- "0..*" Enrollment : contains
+    Enrollment "*" --> "1" CourseOffering : for
+    Transcript "1" *-- "1..*" SemesterRecord : contains
+    SemesterRecord "1" *-- "1..*" Enrollment : summarizes
 
-Student "1" --> "0..*" Registration : creates
-Student "1" --> "1" Transcript : owns
-Registration "1" *-- "0..*" Enrollment
-Enrollment "*" --> "1" CourseOffering
-Transcript "1" *-- "1..*" SemesterRecord
-SemesterRecord "1" *-- "1..*" Enrollment
-
-Registration ..> RegistrationPolicy : uses
-Transcript ..> GradePointPolicy : uses
-CourseOffering --> Course : of
-@enduml
+    Registration ..> RegistrationPolicy : uses
+    Transcript ..> GradePointPolicy : uses
+    CourseOffering --> Course : of
 ```
 
 ### Class diagram notes
@@ -207,72 +200,70 @@ CourseOffering --> Course : of
 
 ## 4. Sequence Diagram 1: Course Add / Drop during Registration
 
-```plantuml
-@startuml
-actor Student
-participant "Registration UI" as UI
-participant "Registration Controller" as RC
-participant "Registration" as REG
-participant "Course Offering" as OFF
-participant "Registration Policy" as POL
+```mermaid
+sequenceDiagram
+    actor Student
+    participant UI as Registration UI
+    participant RC as Registration Controller
+    participant REG as Registration
+    participant OFF as Course Offering
+    participant POL as Registration Policy
 
-Student -> UI : selectAddOrDrop(courseCode, action)
-UI -> RC : processRequest(studentId, courseCode, action)
-RC -> REG : getActiveRegistration(studentId)
-REG --> RC : registration
-RC -> OFF : findOffering(courseCode)
-OFF --> RC : offering
-RC -> POL : validateAddDrop(student, registration, offering)
-POL --> RC : valid / invalid
+    Student->>UI: selectAddOrDrop(courseCode, action)
+    UI->>RC: processRequest(studentId, courseCode, action)
+    RC->>REG: getActiveRegistration(studentId)
+    REG-->>RC: registration
+    RC->>OFF: findOffering(courseCode)
+    OFF-->>RC: offering
+    RC->>POL: validateAddDrop(student, registration, offering)
+    POL-->>RC: valid / invalid
 
-alt valid request and seat available
-  RC -> OFF : hasSeat()
-  OFF --> RC : true
-  alt action = add
-    RC -> REG : addCourse(offering)
-    REG --> RC : success
-  else action = drop
-    RC -> REG : dropCourse(offering)
-    REG --> RC : success
-  end
-  RC --> UI : showUpdatedRegistration()
-  UI --> Student : registration updated
-else invalid request or no seat
-  RC --> UI : showError(reason)
-  UI --> Student : request rejected
-end
-@enduml
+    alt valid request and seat available
+        RC->>OFF: hasSeat()
+        OFF-->>RC: true
+        alt action = add
+            RC->>REG: addCourse(offering)
+            REG-->>RC: success
+        else action = drop
+            RC->>REG: dropCourse(offering)
+            REG-->>RC: success
+        end
+        RC-->>UI: showUpdatedRegistration()
+        UI-->>Student: registration updated
+    else invalid request or no seat
+        RC-->>UI: showError(reason)
+        UI-->>Student: request rejected
+    end
 ```
 
 ## 5. Sequence Diagram 2: Semester-End CGPA Calculation
 
-```plantuml
-@startuml
-actor "Exam Cell" as ExamCell
-participant "Result Service" as RS
-participant "Transcript" as TR
-participant "Semester Record" as SR
-participant "Enrollment" as EN
-participant "Grade Point Policy" as GP
-participant "Student" as ST
+```mermaid
+sequenceDiagram
+    actor ExamCell as Exam Cell
+    participant RS as Result Service
+    participant TR as Transcript
+    participant SR as Semester Record
+    participant EN as Enrollment
+    participant GP as Grade Point Policy
+    participant ST as Student
 
-ExamCell -> RS : publishFinalGrades(studentId, term)
-RS -> TR : calculateCGPA()
-loop for each semester
-  TR -> SR : calculateSGPA()
-  loop for each enrollment
-    SR -> EN : getLetterGrade()
-    EN --> SR : letterGrade
-    SR -> GP : toPoint(letterGrade)
-    GP --> SR : gradePoint
-  end
-  SR --> TR : sgpa and earnedCredits
-end
-TR -> ST : update cgpa
-ST --> TR : acknowledged
-TR --> RS : final CGPA
-RS --> ExamCell : transcript ready
-@enduml
+    ExamCell->>RS: publishFinalGrades(studentId, term)
+    RS->>TR: calculateCGPA()
+    loop for each semester
+        TR->>SR: calculateSGPA()
+        loop for each enrollment
+            SR->>EN: getLetterGrade()
+            EN-->>SR: letterGrade
+            SR->>GP: toPoint(letterGrade)
+            GP-->>SR: gradePoint
+        end
+        SR-->>TR: sgpa and earnedCredits
+    end
+    TR->>ST: update cgpa
+    ST-->>TR: acknowledged
+    TR-->>RS: final CGPA
+    RS-->>ExamCell: transcript ready
 ```
 
 ## 6. Design Justification
