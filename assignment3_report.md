@@ -206,21 +206,21 @@ sequenceDiagram
     participant UI as Registration UI
     participant RC as Registration Controller
     participant REG as Registration
-    participant OFF as Course Offering
-    participant POL as Registration Policy
+    participant CO as Course Offering
+    participant RP as Registration Policy
 
     Student->>UI: selectAddOrDrop(courseCode, action)
     UI->>RC: processRequest(studentId, courseCode, action)
     RC->>REG: getActiveRegistration(studentId)
     REG-->>RC: registration
-    RC->>OFF: findOffering(courseCode)
-    OFF-->>RC: offering
-    RC->>POL: validateAddDrop(student, registration, offering)
-    POL-->>RC: valid / invalid
+    RC->>CO: findOffering(courseCode)
+    CO-->>RC: offering
+    RC->>RP: validateAddDrop(student, registration, offering)
+    RP-->>RC: valid / invalid
 
     alt valid request and seat available
-        RC->>OFF: hasSeat()
-        OFF-->>RC: true
+        RC->>CO: hasSeat()
+        CO-->>RC: true
         alt action = add
             RC->>REG: addCourse(offering)
             REG-->>RC: success
@@ -240,30 +240,30 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    actor ExamCell as Exam Cell
+    actor EC as Exam Cell
     participant RS as Result Service
     participant TR as Transcript
     participant SR as Semester Record
-    participant EN as Enrollment
+    participant ENR as Enrollment
     participant GP as Grade Point Policy
-    participant ST as Student
+    participant STU as Student
 
-    ExamCell->>RS: publishFinalGrades(studentId, term)
+    EC->>RS: publishFinalGrades(studentId, term)
     RS->>TR: calculateCGPA()
     loop for each semester
         TR->>SR: calculateSGPA()
         loop for each enrollment
-            SR->>EN: getLetterGrade()
-            EN-->>SR: letterGrade
+            SR->>ENR: getLetterGrade()
+            ENR-->>SR: letterGrade
             SR->>GP: toPoint(letterGrade)
             GP-->>SR: gradePoint
         end
         SR-->>TR: sgpa and earnedCredits
     end
-    TR->>ST: update cgpa
-    ST-->>TR: acknowledged
+    TR->>STU: update cgpa
+    STU-->>TR: acknowledged
     TR-->>RS: final CGPA
-    RS-->>ExamCell: transcript ready
+    RS-->>EC: transcript ready
 ```
 
 ## 6. Design Justification
